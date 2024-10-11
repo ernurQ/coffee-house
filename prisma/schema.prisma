@@ -1,0 +1,41 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model Coffee {
+  id          String    @default(cuid())  @id
+  createdAt   DateTime  @default(now())   @map("created_at")
+  updatedAt   DateTime  @updatedAt        @map("updated_at")
+
+  thumbnail   String    @default("")
+  name        String
+  country     String
+  description String
+  price       String
+
+  creator     User      @relation(fields: [creatorId], references: [id])
+  creatorId   String    @map("creator_id")
+}
+
+model User {
+  id          String    @default(cuid())  @id
+  role        Role
+  username    String
+  password    String
+
+  createdCoffees  Coffee[]
+}
+
+enum Role {
+  ADMIN
+  PRODUCT_MANAGER
+  CONTENT_MANAGER
+  EDITOR
+  VIEWER
+}
