@@ -1,11 +1,7 @@
-import { IsNumber, IsOptional, IsString, Min } from 'class-validator'
+import { IsNumber, IsString, Min } from 'class-validator'
 import { Type } from 'class-transformer'
 
 export class CoffeeDto {
-	@IsString()
-	@IsOptional()
-	thumbnail: string
-
 	@IsString()
 	name: string
 

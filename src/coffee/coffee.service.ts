@@ -3,6 +3,7 @@ import { PrismaService } from '@/prisma.service'
 import { CoffeeDto } from '@/coffee/dto/coffee.dto'
 import { Prisma } from '@prisma/client'
 import { UpdateCoffeeDto } from '@/coffee/dto/update-coffee.dto'
+import * as fs from 'node:fs'
 
 @Injectable()
 export class CoffeeService {
@@ -56,6 +57,26 @@ export class CoffeeService {
 		return this.prisma.coffee.update({
 			where: uniqueInput,
 			data: dto,
+		})
+	}
+
+	async updateThumbnail(
+		uniqueInput: Prisma.CoffeeWhereUniqueInput,
+		file: Express.Multer.File,
+	) {
+		const coffee = await this.getOne(uniqueInput)
+		if (!coffee) throw new NotFoundException('Coffee not found')
+
+		if (coffee.thumbnail !== '') {
+			const oldThumbnailPath = `.${coffee.thumbnail}`
+			fs.stat(oldThumbnailPath, () => {
+				fs.unlinkSync(oldThumbnailPath)
+			})
+		}
+
+		return this.prisma.coffee.update({
+			where: uniqueInput,
+			data: { thumbnail: `/public/coffee-thumbnails/${file.filename}` },
 		})
 	}
 }

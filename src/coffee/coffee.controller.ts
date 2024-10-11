@@ -1,20 +1,27 @@
 import {
 	Body,
 	Controller,
+	FileTypeValidator,
 	Get,
 	NotFoundException,
 	Param,
+	ParseFilePipe,
 	Post,
 	Put,
 	Query,
+	UploadedFile,
+	UseInterceptors,
 } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
+import { extname } from 'path'
 
 import { CoffeeService } from './coffee.service'
 import { CoffeeDto } from '@/coffee/dto/coffee.dto'
 import { UpdateCoffeeDto } from '@/coffee/dto/update-coffee.dto'
 import { Roles } from '@/auth/decorators/roles.decorator'
 import { GetUser } from '@/auth/decorators/user.decorator'
+import { FileInterceptor } from '@nestjs/platform-express'
+import { diskStorage } from 'multer'
 
 @ApiTags('coffees')
 @Controller('coffees')
@@ -62,5 +69,33 @@ export class CoffeeController {
 	@Roles('EDITOR', 'PRODUCT_MANAGER')
 	async update(@Param('id') id: string, @Body() dto: UpdateCoffeeDto) {
 		return this.coffeeService.update({ id }, dto)
+	}
+
+	/**
+	 * upload coffee thumbnail
+	 */
+	@Post('/:id/thumbnail')
+	@Roles('EDITOR', 'PRODUCT_MANAGER')
+	@UseInterceptors(
+		FileInterceptor('thumbnail', {
+			storage: diskStorage({
+				destination: './public/coffee-thumbnails',
+				filename: (_, file, cb) => {
+					const filename = `${Date.now()}${extname(file.originalname)}`
+					cb(null, filename)
+				},
+			}),
+		}),
+	)
+	async uploadThumbnail(
+		@Param('id') id: string,
+		@UploadedFile(
+			new ParseFilePipe({
+				validators: [new FileTypeValidator({ fileType: 'image' })],
+			}),
+		)
+		file: Express.Multer.File,
+	) {
+		return this.coffeeService.updateThumbnail({ id }, file)
 	}
 }
