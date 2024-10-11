@@ -6,6 +6,7 @@ import { UserModule } from '@/user/user.module'
 import { AppConfig, JwtConfig, RootUserConfig } from '@/config/configuration'
 import { validationSchema } from '@/config/validationSchema'
 import { AppService } from '@/app.service'
+import { CoffeeModule } from './coffee/coffee.module';
 
 @Module({
 	imports: [
@@ -16,6 +17,7 @@ import { AppService } from '@/app.service'
 		}),
 		AuthModule,
 		UserModule,
+		CoffeeModule,
 	],
 	providers: [AppService],
 })

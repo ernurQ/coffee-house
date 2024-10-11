@@ -17,7 +17,7 @@ model Coffee {
   name        String
   country     String
   description String
-  price       String
+  price       Int
 
   creator     User      @relation(fields: [creatorId], references: [id])
   creatorId   String    @map("creator_id")

@@ -12,8 +12,8 @@ export class AppService implements OnModuleInit {
 	) {}
 
 	async onModuleInit() {
-		const username = this.rootUserConfig.username
-		const password = this.rootUserConfig.password
+		const username = this.rootUserConfig.username!
+		const password = this.rootUserConfig.password!
 
 		const adminExists = await this.userService.getOne({ username })
 		if (adminExists) return
