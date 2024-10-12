@@ -6,5 +6,6 @@ import { PrismaService } from '@/prisma.service'
 @Module({
 	controllers: [CoffeeController],
 	providers: [CoffeeService, PrismaService],
+	exports: [CoffeeService],
 })
 export class CoffeeModule {}

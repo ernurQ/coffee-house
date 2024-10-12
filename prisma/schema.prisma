@@ -21,6 +21,16 @@ model Coffee {
 
   creator     User      @relation(fields: [creatorId], references: [id])
   creatorId   String    @map("creator_id")
+
+  lists       CoffeesList[]   @relation("coffee_to_coffees_list")
+}
+
+model CoffeesList {
+  @@map("cofees_list")
+  id          String      @default(cuid()) @id
+  name        String      @unique
+
+  coffees      Coffee[]    @relation("coffee_to_coffees_list")
 }
 
 model User {
