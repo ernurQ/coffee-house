@@ -7,16 +7,24 @@ import {
 import { PrismaService } from '@/prisma.service'
 import { CreateListDto } from '@/coffees-list/dto/create-list.dto'
 import { Prisma } from '@prisma/client'
+import { CoffeeService } from '@/coffee/coffee.service'
 
 @Injectable()
 export class CoffeesListService implements OnModuleInit {
-	constructor(private readonly prisma: PrismaService) {}
+	constructor(
+		private readonly prisma: PrismaService,
+		private readonly coffeeService: CoffeeService,
+	) {}
 
-	async getOne(
-		uniqueInput: Prisma.CoffeesListWhereUniqueInput,
-		include?: Prisma.CoffeesListInclude,
-	) {
-		return this.prisma.coffeesList.findUnique({ where: uniqueInput, include })
+	async getOne(uniqueInput: Prisma.CoffeesListWhereUniqueInput) {
+		const list = await this.prisma.coffeesList.findUnique({
+			where: uniqueInput,
+			include: { coffees: true },
+		})
+		if (!list) throw new NotFoundException('list not found')
+		await this.coffeeService.addThumbnailDomain(list.coffees)
+
+		return list
 	}
 
 	async create({ name }: CreateListDto) {

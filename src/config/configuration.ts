@@ -2,6 +2,7 @@ import { registerAs } from '@nestjs/config'
 
 export const AppConfig = registerAs('app', () => ({
 	port: parseInt(process.env.PORT || '3001', 10),
+	thumbnailDomain: process.env.THUMBNAIL_DOMAIN,
 }))
 
 export const JwtConfig = registerAs('jwt', () => ({

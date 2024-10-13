@@ -49,6 +49,6 @@ export class CoffeesListController {
 	 */
 	@Get('/:listName')
 	async getListCoffees(@Param('listName') name: string) {
-		return this.coffeesListService.getOne({ name }, { coffees: true })
+		return this.coffeesListService.getOne({ name })
 	}
 }

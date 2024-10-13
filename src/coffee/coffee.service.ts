@@ -1,13 +1,19 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '@/prisma.service'
 import { CoffeeDto } from '@/coffee/dto/coffee.dto'
-import { Prisma } from '@prisma/client'
+import { Coffee, Prisma } from '@prisma/client'
 import { UpdateCoffeeDto } from '@/coffee/dto/update-coffee.dto'
 import * as fs from 'node:fs'
+import { AppConfig } from '@/config/configuration'
+import { ConfigType } from '@nestjs/config'
 
 @Injectable()
 export class CoffeeService {
-	constructor(private readonly prisma: PrismaService) {}
+	constructor(
+		private readonly prisma: PrismaService,
+		@Inject(AppConfig.KEY)
+		private readonly appConfig: ConfigType<typeof AppConfig>,
+	) {}
 
 	async create(dto: CoffeeDto, creatorId: string) {
 		return this.prisma.coffee.create({
@@ -35,6 +41,8 @@ export class CoffeeService {
 			},
 		})
 
+		await this.addThumbnailDomain(coffees)
+
 		return {
 			coffees,
 			total: coffees.length,
@@ -42,9 +50,12 @@ export class CoffeeService {
 	}
 
 	async getOne(uniqueInput: Prisma.CoffeeWhereUniqueInput) {
-		return this.prisma.coffee.findUnique({
+		const coffee = await this.prisma.coffee.findUnique({
 			where: uniqueInput,
 		})
+		if (!coffee) throw new NotFoundException('coffee not found')
+		await this.addThumbnailDomain(coffee)
+		return coffee
 	}
 
 	async update(
@@ -78,5 +89,16 @@ export class CoffeeService {
 			where: uniqueInput,
 			data: { thumbnail: `/public/coffee-thumbnails/${file.filename}` },
 		})
+	}
+
+	async addThumbnailDomain(coffees: Coffee | Coffee[]) {
+		const thumbnailDomain = this.appConfig.thumbnailDomain
+		if (Array.isArray(coffees)) {
+			coffees.forEach((coffee) => {
+				coffee.thumbnail = `${thumbnailDomain}${coffee.thumbnail}`
+			})
+			return
+		}
+		coffees.thumbnail = `${thumbnailDomain}${coffees.thumbnail}`
 	}
 }
