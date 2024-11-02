@@ -3,7 +3,7 @@
 /node_modules
 /build
 /public
-
+/mock
 # Logs
 logs
 *.log
