@@ -6,7 +6,7 @@ export class CoffeeDto {
 	name: string
 
 	@IsString()
-	country: string
+	countryName: string
 
 	@IsString()
 	description: string

@@ -9,6 +9,7 @@ import { AppService } from '@/app.service'
 import { CoffeeModule } from './coffee/coffee.module'
 import { CoffeesListModule } from './coffees-list/coffees-list.module'
 import { ServeStaticModule } from '@nestjs/serve-static'
+import { CountryModule } from './country/country.module';
 
 @Module({
 	imports: [
@@ -25,6 +26,7 @@ import { ServeStaticModule } from '@nestjs/serve-static'
 		UserModule,
 		CoffeeModule,
 		CoffeesListModule,
+		CountryModule,
 	],
 	providers: [AppService],
 })

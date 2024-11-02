@@ -6,6 +6,7 @@ import { UpdateCoffeeDto } from '@/coffee/dto/update-coffee.dto'
 import * as fs from 'node:fs'
 import { AppConfig } from '@/config/configuration'
 import { ConfigType } from '@nestjs/config'
+import { CountryService } from '@/country/country.service'
 
 @Injectable()
 export class CoffeeService {
@@ -13,9 +14,12 @@ export class CoffeeService {
 		private readonly prisma: PrismaService,
 		@Inject(AppConfig.KEY)
 		private readonly appConfig: ConfigType<typeof AppConfig>,
+		private readonly countryService: CountryService,
 	) {}
 
 	async create(dto: CoffeeDto, creatorId: string) {
+		const country = await this.countryService.getOne({ name: dto.countryName })
+		if (!country) throw new NotFoundException('country not found')
 		return this.prisma.coffee.create({
 			data: {
 				...dto,
@@ -30,7 +34,7 @@ export class CoffeeService {
 				AND: [
 					name ? { name: { contains: name, mode: 'insensitive' } } : {},
 					country
-						? { country: { contains: country, mode: 'insensitive' } }
+						? { countryName: { contains: country, mode: 'insensitive' } }
 						: {},
 				],
 			},
@@ -75,13 +79,19 @@ export class CoffeeService {
 		uniqueInput: Prisma.CoffeeWhereUniqueInput,
 		file: Express.Multer.File,
 	) {
-		const coffee = await this.getOne(uniqueInput)
+		const coffee = await this.prisma.coffee.findUnique({
+			where: uniqueInput,
+		})
 		if (!coffee) throw new NotFoundException('Coffee not found')
 
 		if (coffee.thumbnail !== '') {
 			const oldThumbnailPath = `.${coffee.thumbnail}`
 			fs.stat(oldThumbnailPath, () => {
-				fs.unlinkSync(oldThumbnailPath)
+				try {
+					fs.unlinkSync(oldThumbnailPath)
+				} catch (e) {
+					console.log(e)
+				}
 			})
 		}
 

@@ -7,39 +7,46 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model Coffee {
-  id          String    @default(cuid())  @id
-  createdAt   DateTime  @default(now())   @map("created_at")
-  updatedAt   DateTime  @updatedAt        @map("updated_at")
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  thumbnail   String    @default("")
+  thumbnail   String @default("")
   name        String
-  country     String
   description String
   price       Int
 
-  creator     User      @relation(fields: [creatorId], references: [id])
-  creatorId   String    @map("creator_id")
+  creator   User   @relation(fields: [creatorId], references: [id])
+  creatorId String @map("creator_id")
 
-  lists       CoffeesList[]   @relation("coffee_to_coffees_list")
+  lists       CoffeesList[] @relation("coffee_to_coffees_list")
+
+  Country     Country      @relation(fields: [countryName], references: [name])
+  countryName String
+}
+
+model Country {
+  name    String   @id
+  coffees Coffee[]
 }
 
 model CoffeesList {
-  @@map("cofees_list")
-  id          String      @default(cuid()) @id
-  name        String      @unique
+  id   String @id @default(cuid())
+  name String @unique
 
-  coffees      Coffee[]    @relation("coffee_to_coffees_list")
+  coffees Coffee[] @relation("coffee_to_coffees_list")
+
+  @@map("cofees_list")
 }
 
 model User {
-  id          String    @default(cuid())  @id
-  role        Role
-  username    String    @unique
-  password    String
+  id       String @id @default(cuid())
+  role     Role
+  username String @unique
+  password String
 
-  createdCoffees  Coffee[]
+  createdCoffees Coffee[]
 }
 
 enum Role {
