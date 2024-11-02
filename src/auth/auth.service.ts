@@ -9,6 +9,7 @@ import * as bcrypt from 'bcrypt'
 import { UserService } from '@/user/user.service'
 import { LoginDto } from './dto/login.dto'
 import { RegisterDto } from '@/auth/dto/register.dto'
+import { Role } from '@/user/role.type'
 
 @Injectable()
 export class AuthService {
@@ -23,23 +24,23 @@ export class AuthService {
 
 	async login(dto: LoginDto) {
 		const user = await this.validateUser(dto)
-		const { token } = await this.getTokens(user.id)
+		const { token } = await this.getTokens(user.id, user.role)
 
-		return { token }
+		return { token, role: user.role }
 	}
 
 	private async validateUser({ username, password }: LoginDto) {
 		const user = await this.userService.getOne({ username })
 		if (!user) throw new NotFoundException('User not found')
 
-		const isCorrectPassword = bcrypt.compare(password, user.password)
+		const isCorrectPassword = await bcrypt.compare(password, user.password)
 		if (!isCorrectPassword) throw new UnauthorizedException('Invalid password')
 
 		return user
 	}
 
-	private async getTokens(id: string) {
-		const payload = { sub: id }
+	private async getTokens(id: string, role: Role) {
+		const payload = { sub: id, role }
 		const token = this.jwtService.sign(payload)
 		return { token }
 	}
